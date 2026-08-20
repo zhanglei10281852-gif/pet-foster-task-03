@@ -25,13 +25,6 @@ type User struct {
 	UpdatedAt time.Time `json:"updateTime"`
 }
 
-func (u User) AllowsSession() bool {
-	if u.Role == "" {
-		return false
-	}
-	return true
-}
-
 type Pet struct {
 	ID                  int64     `json:"petId"`
 	Name                string    `json:"petName"`

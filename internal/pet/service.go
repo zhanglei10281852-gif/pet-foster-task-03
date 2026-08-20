@@ -123,8 +123,7 @@ func (s *Service) Authenticate(ctx context.Context, token string) (Principal, er
 	if err != nil {
 		return Principal{}, err
 	}
-	user := User{Role: Role(role), Status: userStatus}
-	if revoked != "" || !user.AllowsSession() || !expiresAt.After(s.now()) {
+	if revoked != "" || userStatus != 1 || !expiresAt.After(s.now()) {
 		return Principal{}, ErrUnauthenticated
 	}
 	return Principal{UserID: userID, Username: username, Role: Role(role), SessionID: sessionID}, nil
@@ -201,8 +200,7 @@ func (s *Service) UpdateUser(ctx context.Context, principal Principal, input Use
 	if err := requireAffected(result, ErrNotFound); err != nil {
 		return User{}, err
 	}
-	updated := User{Role: role, Status: status}
-	if current.AllowsSession() && !updated.AllowsSession() {
+	if current.Status == 1 && status != 1 {
 		if _, err := s.store.db.ExecContext(ctx, `UPDATE pet_sessions SET revoked_at=? WHERE user_id=? AND revoked_at IS NULL`, now, input.ID); err != nil {
 			return User{}, err
 		}
